@@ -2,8 +2,8 @@
 
 try {
     // load controller
-    $class = $_GET['class'];
-    $method = $_GET['method'];
+    $class = ($_GET['class']) ? $_GET['class'] : 'top';
+    $method = $_GET['method'] ? $_GET['method'] : 'index';
     $controller_file = CONTROLLER_DIR . "/{$class}_controller.php";
     if (!file_exists($controller_file)) {
         throw new Exception("not found controller:{$controller_file}");
