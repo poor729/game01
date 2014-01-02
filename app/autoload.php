@@ -21,14 +21,14 @@ try {
         throw new Exception("not found method:{$class_name}/{$method}");
     }
     $controller->{$method}();
-    $view_file = VIEW_DIR . "/{$class}/{$method}.php";
 
     // execute view
-    if (!file_exists($view_file)) {
-        throw new Exception("not found view:{$view_file}");
-    }
-    require_once($view_file);
+    $viewer = new AppView($class, $method);
+    $viewer->setVars($controller->getVars());
+    $viewer->render();
+
 } catch(Exception $e) {
+    var_dump($e->getMessage());
     require_once(CONTROLLER_DIR . "/error_controller.php");
     $error = new ErrorController();
     $error->index();
