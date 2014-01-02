@@ -19,7 +19,7 @@ class AppView
 
     public function getViewFile()
     {
-        $view_file = "./" . $this->class . "/" . $this->method . ".html";
+        $view_file = "./" . $this->class . "/" . $this->method . ".tmp";
         return $view_file;
     }
 

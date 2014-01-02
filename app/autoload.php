@@ -28,9 +28,15 @@ try {
     $viewer->render();
 
 } catch(Exception $e) {
-    var_dump($e->getMessage());
+//    var_dump($e->getMessage());
     require_once(CONTROLLER_DIR . "/error_controller.php");
     $error = new ErrorController();
     $error->index();
-    require_once(VIEW_DIR . "/error/index.php");
+
+    $vars = $error->getVars();
+    $vars['msg'] = $e->getMessage();
+
+    $viewer = new AppView("error", "index");
+    $viewer->setVars($vars);
+    $viewer->render();
 }
