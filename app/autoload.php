@@ -1,42 +1,65 @@
 <?php
 
-try {
-    // load controller
-    $class = ($_GET['class']) ? $_GET['class'] : 'top';
-    $method = $_GET['method'] ? $_GET['method'] : 'index';
-    $controller_file = CONTROLLER_DIR . "/{$class}_controller.php";
-    if (!file_exists($controller_file)) {
-        throw new Exception("not found controller:{$controller_file}");
+class Autoload
+{
+    protected $class;
+    protected $method;
+
+    public function __construct($class, $method)
+    {
+        $this->class = $class;
+        $this->method = $method;
     }
-    require_once($controller_file);
 
-    // execute controller
-    $class_name = '';
-    foreach (explode('_', $class) as $word) {
-        $class_name .= ucwords($word);
+    public function getControllerPath()
+    {
+        $controller_file = CONTROLLER_DIR . "/". $this->class . "_controller.php";
+        if (!file_exists($controller_file)) {
+            throw new Exception("not found controller:{$controller_file}");
+        }
+        return $controller_file;
     }
-    $class_name .= "Controller";
-    $controller = new $class_name();
-    if (!method_exists($controller, $method)) {
-        throw new Exception("not found method:{$class_name}/{$method}");
+
+    public function getControllerClassName()
+    {
+        $class_name = '';
+        foreach (explode('_', $this->class) as $word) {
+            $class_name .= ucwords($word);
+        }
+        $class_name .= "Controller";
+        return $class_name;
     }
-    $controller->{$method}();
 
-    // execute view
-    $viewer = new AppView($class, $method);
-    $viewer->setVars($controller->getVars());
-    $viewer->render();
+    public function dispatch()
+    {
+        try {
+            // execute controller
+            require_once($this->getControllerPath());
+            $class_name = $this->getControllerClassName();
+            $controller = new $class_name();
+            if (!method_exists($controller, $this->method)) {
+                throw new Exception("not found method:{$class_name}/" . $this->method);
+            }
+            $controller->{$this->method}();
 
-} catch(Exception $e) {
-//    var_dump($e->getMessage());
-    require_once(CONTROLLER_DIR . "/error_controller.php");
-    $error = new ErrorController();
-    $error->index();
+            // execute view
+            $viewer = new AppView($this->class, $this->method, $controller->getVars());
+            $viewer->render();
 
-    $vars = $error->getVars();
-    $vars['msg'] = $e->getMessage();
+        } catch(Exception $e) {
+            // execute controller
+            require_once(CONTROLLER_DIR . "/error_controller.php");
+            $error = new ErrorController();
+            $error->index();
 
-    $viewer = new AppView("error", "index");
-    $viewer->setVars($vars);
-    $viewer->render();
+            $vars = $error->getVars();
+            $vars['msg'] = $e->getMessage();
+
+            // execute view
+            $viewer = new AppView("error", "index", $vars);
+            $viewer->render();
+        }
+
+    }
+
 }

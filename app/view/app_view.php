@@ -6,10 +6,11 @@ class AppView
     private $method;
     protected $vars;
 
-    public function __construct($class, $method)
+    public function __construct($class, $method, array $vars = array())
     {
         $this->class = $class;
         $this->method = $method;
+        $this->vars = $vars;
     }
 
     public function getTitle()
@@ -23,14 +24,16 @@ class AppView
         return $view_file;
     }
 
-    public function setVars($vars)
+    public function getVars()
     {
-        $this->vars = $vars;
+        $vars = $this->vars;
+        $vars['_title'] = $this->getTitle();
+        return $vars;
     }
 
     public function render()
     {
-        $vars = $this->vars;
+        $vars = $this->getVars();
         $vars['_title'] = $this->getTitle();
 
         require_once PLUGINS_DIR . "vendor/autoload.php";
